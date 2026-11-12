@@ -71,3 +71,5 @@ Recheck current integration documentation before implementation. The user curren
 5. Add the second room and 3D page only when requested.
 
 For a new assistant session: read this handoff and inspect current Git history before editing. Preserve user changes, keep the initial scope bedroom-only, and do not mistake the mock controls for working integrations.
+
+Brightness interaction update: light tiles now act as filled drag dimmers. A separate sparkle button opens color controls. Room and modal brightness controls use filled boxes and relative dragging without click-to-jump. Keyboard arrow keys remain supported.

@@ -16,7 +16,7 @@ On the same Wi-Fi, open `http://YOUR-COMPUTER-IP:8080` on the iPad. The computer
 
 ## Try it
 
-- Tap a light tile to change brightness and color. Its small switch toggles power directly.
+- Drag left or right across a light tile to dim or brighten it; its fill follows your drag. Tap the sparkle button for color controls and the small switch for power. Brightness boxes also support arrow keys; a tap alone does not change brightness.
 - Use Relax, Focus, Good night, or All off to change the lighting together.
 - Room brightness adjusts the currently lit lights. When all lights are off, raising it turns all four on.
 - Set AC temperature from 60–86°F, switch between Cool / Auto / Fan, and toggle AC power. Fan mode disables the temperature buttons.
@@ -62,3 +62,5 @@ git push
 Push your changes before switching computers, then pull on the other computer. If a pull reports conflicting history, resolve it before continuing; do not force-push over work from another device. GitHub authentication is required to push.
 
 This repository syncs the source files. Demo device settings remain in each browser's local storage and do not sync through GitHub. Uploading the files does not publish a live website.
+
+Brightness interaction update: light tiles now act as filled drag dimmers. A separate sparkle button opens color controls. Room and modal brightness controls use filled boxes and relative dragging without click-to-jump. Keyboard arrow keys remain supported.

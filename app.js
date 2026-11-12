@@ -45,12 +45,55 @@ function toast(message){$('#toast').textContent=message;$('#toast').classList.ad
 function clearScene(){state.scene=null;renderScenes();}
 function renderScenes(){$$('[data-scene]').forEach(button=>{const active=button.dataset.scene===state.scene;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});}
 function renderLights(){
-  $('#light-grid').innerHTML=state.lights.map(light=>`<div class="light-card ${light.on?'is-on':''}" style="--light-color:${light.color}"><button class="light-open" data-light="${light.id}" aria-label="Adjust ${light.name}"><span class="light-symbol">${icon(light.icon)}</span><strong>${light.name}</strong><small>${light.on?light.brightness+'% brightness':'Off'}</small></button><button class="light-toggle" data-toggle="${light.id}" aria-label="${light.name} power" aria-pressed="${light.on}"></button><div class="light-meter"><span style="width:${light.on?light.brightness:0}%"></span></div></div>`).join('');
+  if (!$('#light-grid').children.length) {
+    $('#light-grid').innerHTML=state.lights.map(light=>`<div class="light-card" data-card="${light.id}"><div class="tile-fill"></div><div class="light-open"><span class="light-symbol">${icon(light.icon)}</span><strong>${light.name}</strong><small></small></div><input class="tile-brightness" data-brightness="${light.id}" type="range" min="0" max="100" aria-label="${light.name} brightness"><button class="light-toggle" data-toggle="${light.id}" aria-label="${light.name} power"></button><button class="color-button" data-light="${light.id}" aria-label="Adjust ${light.name} color">${icon('spark')}</button></div>`).join('');
+  }
+  state.lights.forEach(light=>{
+    const card=$(`[data-card="${light.id}"]`), value=light.on?light.brightness:0;
+    card.classList.toggle('is-on',light.on);
+    card.style.setProperty('--light-color',light.color);
+    card.style.setProperty('--brightness',value+'%');
+    card.querySelector('small').textContent=light.on?value+'% brightness':'Off';
+    card.querySelector('input').value=value;
+    card.querySelector('[data-toggle]').setAttribute('aria-pressed',String(light.on));
+  });
   const on=state.lights.filter(light=>light.on);
   $('#light-count').textContent=`${on.length} on`;
   const average=on.length?Math.round(on.reduce((sum,l)=>sum+l.brightness,0)/on.length):0;
   $('#room-level').textContent=average+'%';$('#room-brightness').value=average;rangeFill($('#room-brightness'));
 }
+// Keep range nodes stable during pointer capture and keyboard adjustment.
+$('#light-grid').addEventListener('input',event=>{
+  const id=event.target.dataset.brightness;if(!id)return;
+  const light=state.lights.find(l=>l.id===id),value=Number(event.target.value);
+  light.on=value>0;if(value>0)light.brightness=value;
+  clearScene();save();renderLights();
+});
+// Drag from the existing value: touching the box never jumps brightness.
+let brightnessDrag=null;
+document.addEventListener('pointerdown',event=>{
+  const input=event.target.closest('.tile-brightness, #room-brightness, #light-brightness');
+  if(!input||!event.isPrimary||event.button!==0)return;
+  event.preventDefault();input.focus({preventScroll:true});
+  brightnessDrag={input,id:event.pointerId,x:event.clientX,value:Number(input.value),width:input.getBoundingClientRect().width};
+  input.setPointerCapture(event.pointerId);
+});
+document.addEventListener('pointermove',event=>{
+  const drag=brightnessDrag;if(!drag||drag.id!==event.pointerId)return;
+  const min=Number(drag.input.min),max=Number(drag.input.max);
+  const value=Math.round(clamp(drag.value+(event.clientX-drag.x)/drag.width*(max-min),min,max));
+  if(value!==Number(drag.input.value)){
+    drag.input.value=value;drag.input.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+});
+function endBrightnessDrag(event){
+  if(!brightnessDrag||brightnessDrag.id!==event.pointerId)return;
+  const {input,id}=brightnessDrag;brightnessDrag=null;
+  if(input.hasPointerCapture(id))input.releasePointerCapture(id);
+}
+document.addEventListener('pointerup',endBrightnessDrag);
+document.addEventListener('pointercancel',endBrightnessDrag);
+document.addEventListener('lostpointercapture',endBrightnessDrag);
 $('#light-grid').addEventListener('click',event=>{
   const toggle=event.target.closest('[data-toggle]');
   if(toggle){const light=state.lights.find(l=>l.id===toggle.dataset.toggle);light.on=!light.on;clearScene();save();renderLights();$(`[data-toggle="${light.id}"]`).focus({preventScroll:true});return;}
