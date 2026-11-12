@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+secrets.yaml
+*.pem
+*.key
+
+# Local tooling and scratch output
+node_modules/
+*.log
+work/
